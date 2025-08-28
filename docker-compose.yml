@@ -1,0 +1,19 @@
+# docker-compose.yml
+version: '3.8'
+services:
+  data-service:
+    build: 
+      dockerfile: ./data-service/Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - ENVIRONMENT=local
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    depends_on:
+      - rabbitmq
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
