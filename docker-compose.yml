@@ -4,6 +4,8 @@ services:
   data-service:
     build: 
       dockerfile: ./data-service/Dockerfile
+    volumes:
+      - ./data-service/src:/app
     ports:
       - "8001:8001"
     environment:

@@ -1,14 +1,17 @@
-import os
 import asyncio
 import logging
 from typing import Dict, Any
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from pydantic import BaseModel
 import uvicorn
 
+from config import Settings, get_settings
+
+config: Settings = get_settings()
+
 # Configure logging
 logging.basicConfig(
-    level=getattr(logging, os.getenv('LOG_LEVEL', 'INFO')),
+    level=getattr(logging, config.log_level),
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
@@ -33,12 +36,8 @@ class BacktestRequest(BaseModel):
 @app.on_event("startup")
 async def startup_event():
     try:
-        # Get environment variables
-        rabbitmq_url = os.getenv('RABBITMQ_URL', 'amqp://localhost:5672')
-        env = os.getenv('ENV', 'development')
-        
-        logger.info(f"Starting data service in {env} mode")
-        logger.info(f"RABBITMQ_URL: {rabbitmq_url}")
+        logger.info(f"Starting data service in {config.environment} mode")
+        logger.info(f"RABBITMQ_URL: {config.rabbitmq_url}")
         
     except Exception as e:
         logger.error(f"Failed to initialize data service: {e}")
@@ -54,7 +53,7 @@ async def health_check():
     return {
         "status": "healthy",
         "service": "data-service",
-        "environment": os.getenv('ENV', 'development'),
+        "environment": config.environment,
         "timestamp": asyncio.get_event_loop().time()
     }
 
@@ -66,24 +65,5 @@ async def global_exception_handler(request, exc):
     return {
         "status": "error",
         "message": "Internal server error",
-        "detail": str(exc) if os.getenv('DEBUG', 'false').lower() == 'true' else "An error occurred"
+        "detail": str(exc) if config.debug == 'true' else "An error occurred"
     }
-
-# Main entry point
-if __name__ == "__main__":
-    # Get configuration from environment
-    host = os.getenv('HOST', '0.0.0.0')
-    port = int(os.getenv('PORT', 8001))
-    reload = os.getenv('HOT_RELOAD', 'false').lower() == 'true'
-    
-    logger.info(f"Starting data service on {host}:{port}")
-    logger.info(f"Hot reload: {reload}")
-    
-    # Start the server
-    uvicorn.run(
-        "main:app",
-        host=host,
-        port=port,
-        reload=reload,
-        log_level=os.getenv('LOG_LEVEL', 'info').lower()
-    )
