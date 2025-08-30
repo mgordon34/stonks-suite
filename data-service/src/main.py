@@ -1,9 +1,10 @@
 import asyncio
+import databento
 import logging
 from typing import Dict, Any
 from fastapi import FastAPI
 from pydantic import BaseModel
-import uvicorn
+
 
 from config import Settings, get_settings
 
@@ -56,6 +57,16 @@ async def health_check():
         "environment": config.environment,
         "timestamp": asyncio.get_event_loop().time()
     }
+
+@app.get("/historical-data")
+async def get_historical_data():
+    logger.info("Getting historical data")
+
+    dbn_store = databento.DBNStore.from_file(path="data/glbx-mdp3-20250801-20250828.ohlcv-1m.dbn.zst")
+
+    df = dbn_store.to_df()
+    logger.info(f"Retrieved {len(df)} entries in data frame")
+
 
 # Error handlers
 @app.exception_handler(Exception)
