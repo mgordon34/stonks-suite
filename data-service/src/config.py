@@ -1,5 +1,7 @@
-from pydantic_settings import BaseSettings
 from functools import lru_cache
+
+from pydantic_settings import BaseSettings
+
 
 class Settings(BaseSettings):
     service_name: str = "data-service"
@@ -18,6 +20,6 @@ class Settings(BaseSettings):
     postgres_url: str = "postgresql://user:pass@localhost:5432/trading"
     redis_url: str = "redis://localhost:6379"
 
-@lru_cache()
+@lru_cache
 def get_settings() -> Settings:
     return Settings()

@@ -1,12 +1,11 @@
 import asyncio
-import databento
 import logging
-from typing import Dict, Any
+from typing import Any, Dict
+
+import databento
+from config import Settings, get_settings
 from fastapi import FastAPI
 from pydantic import BaseModel
-
-
-from config import Settings, get_settings
 
 config: Settings = get_settings()
 
@@ -66,6 +65,10 @@ async def get_historical_data():
 
     df = dbn_store.to_df()
     logger.info(f"Retrieved {len(df)} entries in data frame")
+
+    # Times are in UTC
+    for index, row in df.iterrows():
+        logger.info(f"Index: {index}, row: {row}")
 
 
 # Error handlers
