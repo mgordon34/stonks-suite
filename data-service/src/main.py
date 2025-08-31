@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Any, Dict
+from typing import Any
 
 import databento
 from config import Settings, get_settings
@@ -12,7 +12,7 @@ config: Settings = get_settings()
 # Configure logging
 logging.basicConfig(
     level=getattr(logging, config.log_level),
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
 
@@ -20,8 +20,9 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="Trading Data Service",
     description="Microservice for market data and backtesting",
-    version="1.0.0"
+    version="1.0.0",
 )
+
 
 # Pydantic models for API
 class BacktestRequest(BaseModel):
@@ -31,22 +32,24 @@ class BacktestRequest(BaseModel):
     start_date: str
     end_date: str
     speed: float = 1.0
-    strategy_config: Dict[str, Any] = {}
+    strategy_config: dict[str, Any] = {}
+
 
 @app.on_event("startup")
 async def startup_event():
     try:
         logger.info(f"Starting data service in {config.environment} mode")
         logger.info(f"RABBITMQ_URL: {config.rabbitmq_url}")
-        
+
     except Exception as e:
         logger.error(f"Failed to initialize data service: {e}")
         raise
 
+
 @app.on_event("shutdown")
 async def shutdown_event():
     logger.info("Shutting down data service...")
-    
+
 
 @app.get("/health")
 async def health_check():
@@ -54,14 +57,17 @@ async def health_check():
         "status": "healthy",
         "service": "data-service",
         "environment": config.environment,
-        "timestamp": asyncio.get_event_loop().time()
+        "timestamp": asyncio.get_event_loop().time(),
     }
+
 
 @app.get("/historical-data")
 async def get_historical_data():
     logger.info("Getting historical data")
 
-    dbn_store = databento.DBNStore.from_file(path="data/glbx-mdp3-20250801-20250828.ohlcv-1m.dbn.zst")
+    dbn_store = databento.DBNStore.from_file(
+        path="data/glbx-mdp3-20250801-20250828.ohlcv-1m.dbn.zst"
+    )
 
     df = dbn_store.to_df()
     logger.info(f"Retrieved {len(df)} entries in data frame")
@@ -79,5 +85,5 @@ async def global_exception_handler(request, exc):
     return {
         "status": "error",
         "message": "Internal server error",
-        "detail": str(exc) if config.debug == 'true' else "An error occurred"
+        "detail": str(exc) if config.debug == "true" else "An error occurred",
     }
