@@ -1,4 +1,3 @@
 [tool.ruff]
 [tool.ruff.lint]
-select = ["E", "F", "I"]
-extend-select = ["B", "UP", "SIM"]
+select = ["E", "F", "UP", "B", "SIM", "I"]
