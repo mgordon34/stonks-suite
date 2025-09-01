@@ -10,6 +10,9 @@ from services.historical_data_service import HistoricalDataService
 
 config: Settings = get_settings()
 
+structlog.configure(
+    wrapper_class=structlog.make_filtering_bound_logger(config.log_level)
+)
 logger = structlog.get_logger(__name__)
 
 # FastAPI app

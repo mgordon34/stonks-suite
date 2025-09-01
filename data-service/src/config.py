@@ -1,3 +1,4 @@
+import logging
 from functools import lru_cache
 
 from pydantic_settings import BaseSettings
@@ -13,7 +14,7 @@ class Settings(BaseSettings):
     port: int = 8001
 
     # Logging
-    log_level: str = "INFO"
+    log_level: int = logging.DEBUG
 
     # External services
     rabbitmq_url: str = "amqp://localhost:5672"
