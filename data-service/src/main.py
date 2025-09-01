@@ -10,9 +10,7 @@ from services.historical_data_service import HistoricalDataService
 
 config: Settings = get_settings()
 
-structlog.configure(
-    wrapper_class=structlog.make_filtering_bound_logger(config.log_level)
-)
+structlog.configure(wrapper_class=structlog.make_filtering_bound_logger(config.log_level))
 logger = structlog.get_logger(__name__)
 
 # FastAPI app
@@ -61,9 +59,7 @@ async def health_check():
 
 
 @app.get("/historical-data")
-async def get_historical_data(
-    start_time: datetime, end_time: datetime, symbols: list[str] = Query()
-):
+async def get_historical_data(start_time: datetime, end_time: datetime, symbols: list[str] = Query()):
     HistoricalDataService.publish_historical_data(start_time, end_time, symbols)
 
 
