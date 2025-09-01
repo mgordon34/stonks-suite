@@ -1,10 +1,12 @@
 import asyncio
 import logging
+from datetime import datetime
 from typing import Any
 
 import databento
+import pytz
 from config import Settings, get_settings
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from pydantic import BaseModel
 
 config: Settings = get_settings()
@@ -62,8 +64,10 @@ async def health_check():
 
 
 @app.get("/historical-data")
-async def get_historical_data():
-    logger.info("Getting historical data")
+async def get_historical_data(
+    start_time: datetime, end_time: datetime, symbols: list[str] = Query()
+):
+    logger.info(f"get_historical_data[{symbols}]: {start_time} - {end_time}")
 
     dbn_store = databento.DBNStore.from_file(
         path="data/glbx-mdp3-20250801-20250828.ohlcv-1m.dbn.zst"
@@ -73,8 +77,11 @@ async def get_historical_data():
     logger.info(f"Retrieved {len(df)} entries in data frame")
 
     # Times are in UTC
-    for index, row in df.iterrows():
-        logger.info(f"Index: {index}, row: {row}")
+    for index, _row in df.head(5).iterrows():
+        logger.info(
+            f"Index: {index}: vs {start_time.astimezone(pytz.utc)} \
+            = {index > start_time}"
+        )
 
 
 # Error handlers
