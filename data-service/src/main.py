@@ -1,22 +1,16 @@
 import asyncio
-import logging
 from datetime import datetime
 from typing import Any
 
-import databento
-import pytz
+import structlog
 from config import Settings, get_settings
 from fastapi import FastAPI, Query
 from pydantic import BaseModel
+from services.historical_data_service import HistoricalDataService
 
 config: Settings = get_settings()
 
-# Configure logging
-logging.basicConfig(
-    level=getattr(logging, config.log_level),
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 # FastAPI app
 app = FastAPI(
@@ -67,21 +61,7 @@ async def health_check():
 async def get_historical_data(
     start_time: datetime, end_time: datetime, symbols: list[str] = Query()
 ):
-    logger.info(f"get_historical_data[{symbols}]: {start_time} - {end_time}")
-
-    dbn_store = databento.DBNStore.from_file(
-        path="data/glbx-mdp3-20250801-20250828.ohlcv-1m.dbn.zst"
-    )
-
-    df = dbn_store.to_df()
-    logger.info(f"Retrieved {len(df)} entries in data frame")
-
-    # Times are in UTC
-    for index, _row in df.head(5).iterrows():
-        logger.info(
-            f"Index: {index}: vs {start_time.astimezone(pytz.utc)} \
-            = {index > start_time}"
-        )
+    HistoricalDataService.publish_historical_data(start_time, end_time, symbols)
 
 
 # Error handlers
