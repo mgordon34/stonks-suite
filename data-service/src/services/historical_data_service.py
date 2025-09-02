@@ -10,7 +10,9 @@ logger = structlog.get_logger(__name__)
 
 class HistoricalDataService:
     @classmethod
-    def publish_historical_data(cls, start_time: datetime, end_time: datetime, symbols: list[str], timeframe: str):
+    def publish_historical_data(
+        cls, start_time: datetime, end_time: datetime, symbols: list[str], timeframe: str
+    ) -> dict[str, dict[datetime, Candle]]:
         logger.info(f"get_historical_data[{symbols}]: {start_time} - {end_time}")
 
         dbn_store = databento.DBNStore.from_file(path="data/glbx-mdp3-20250801-20250828.ohlcv-1m.dbn.zst")
@@ -19,10 +21,10 @@ class HistoricalDataService:
         df = dbn_store.to_df()
         logger.info(f"Retrieved {len(df)} entries in data frame")
 
-        cls._deserialize_dbn(df, symbols, "1")
+        return cls._deserialize_dbn(df, symbols, "1")
 
     def _deserialize_dbn(df: pd.DataFrame, symbols: list[str], timeframe: str) -> dict[str, dict[datetime, Candle]]:
-        data: dict = dict.fromkeys(symbols, {})
+        data: dict = {s: {} for s in symbols}
 
         for index, row in df.iterrows():
             symbol: str = row.symbol[:2]
@@ -34,8 +36,5 @@ class HistoricalDataService:
                 data[symbol][index] = Candle(
                     symbol, timeframe, index.to_pydatetime(), row.open, row.high, row.low, row.close, row.volume
                 )
-
-        for i in data["NQ"]:
-            logger.info(f"[{i}]: {data['NQ'][i]}, {type(data['NQ'][i].start_time)}")
 
         return data
