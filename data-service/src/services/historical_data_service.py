@@ -10,7 +10,7 @@ logger = structlog.get_logger(__name__)
 
 class HistoricalDataService:
     @classmethod
-    def publish_historical_data(cls, start_time: datetime, end_time: datetime, symbols: list[str]):
+    def publish_historical_data(cls, start_time: datetime, end_time: datetime, symbols: list[str], timeframe: str):
         logger.info(f"get_historical_data[{symbols}]: {start_time} - {end_time}")
 
         dbn_store = databento.DBNStore.from_file(path="data/glbx-mdp3-20250801-20250828.ohlcv-1m.dbn.zst")
@@ -32,7 +32,7 @@ class HistoricalDataService:
 
             if index not in data[symbol] or row.volume > data[symbol][index].volume:
                 data[symbol][index] = Candle(
-                    symbol, "1", index.to_pydatetime(), row.open, row.high, row.low, row.close, row.volume
+                    symbol, timeframe, index.to_pydatetime(), row.open, row.high, row.low, row.close, row.volume
                 )
 
         for i in data["NQ"]:
