@@ -19,26 +19,23 @@ class HistoricalDataService:
         df = dbn_store.to_df()
         logger.info(f"Retrieved {len(df)} entries in data frame")
 
-        cls._deserialize_dbn(symbols, df)
+        cls._deserialize_dbn(df, symbols, "1")
 
-    def _deserialize_dbn(symbols: list[str], df: pd.DataFrame) -> dict[str, dict[datetime, Candle]]:
-        # Times are in UTC
-        bars = {
-            "NQ": {},
-            "ES": {},
-        }
-        for index, row in df.head(100000).iterrows():
-            # logger.info(
-            #     f"Index: {index}: vs "
-            #     f"{start_time.astimezone(pytz.utc)} = {index > start_time}"
-            # )
-            if "-" in row.symbol:
+    def _deserialize_dbn(df: pd.DataFrame, symbols: list[str], timeframe: str) -> dict[str, dict[datetime, Candle]]:
+        data: dict = dict.fromkeys(symbols, {})
+
+        for index, row in df.iterrows():
+            symbol: str = row.symbol[:2]
+
+            if "-" in row.symbol or symbol not in symbols:
                 continue
-            symbol = row.symbol[:2]
 
-            logger.info(f"[{symbol}]: {index}, volume: {row.volume}")
-            if index not in bars[symbol] or row.volume > bars[symbol][index].volume:
-                bars[symbol][index] = row
+            if index not in data[symbol] or row.volume > data[symbol][index].volume:
+                data[symbol][index] = Candle(
+                    symbol, "1", index.to_pydatetime(), row.open, row.high, row.low, row.close, row.volume
+                )
 
-        for i in bars["NQ"]:
-            logger.info(f"[{i}]: {bars['NQ'][i]}")
+        for i in data["NQ"]:
+            logger.info(f"[{i}]: {data['NQ'][i]}, {type(data['NQ'][i].start_time)}")
+
+        return data
