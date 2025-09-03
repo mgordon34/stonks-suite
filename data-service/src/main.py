@@ -3,10 +3,11 @@ from datetime import datetime
 from typing import Any
 
 import structlog
-from config import Settings, get_settings
 from fastapi import FastAPI, Query
 from pydantic import BaseModel
 from services.historical_data_service import HistoricalDataService
+
+from common.config import Settings, get_settings
 
 config: Settings = get_settings()
 
