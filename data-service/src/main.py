@@ -60,7 +60,8 @@ async def health_check():
 
 @app.get("/historical-data")
 async def get_historical_data(start_time: datetime, end_time: datetime, timeframe: str, symbols: list[str] = Query()):
-    return HistoricalDataService.publish_historical_data(start_time, end_time, symbols, timeframe)
+    hist_data_service = HistoricalDataService(start_time, end_time, symbols, timeframe)
+    return hist_data_service.publish_historical_data()
 
 
 # Error handlers
