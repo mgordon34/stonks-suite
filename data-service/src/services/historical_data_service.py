@@ -1,8 +1,9 @@
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import databento
 import pandas as pd
+import pytz
 import structlog
 from models.candles import Candle
 
@@ -19,13 +20,25 @@ class HistoricalDataService:
     def publish_historical_data(self) -> dict[str, dict[datetime, Candle]]:
         logger.info(f"get_historical_data[{self.symbols}]: {self.start_time} - {self.end_time}")
 
-        dbn_store = databento.DBNStore.from_file(path="data/glbx-mdp3-20250801-20250828.ohlcv-1m.dbn.zst")
-        # dbn_store = databento.DBNStore.from_file(path="data/glbx-mdp3-20200829-20250828.ohlcv-1m.dbn.zst")
+        # data: dict = {s: {} for s in self.symbols}
+
+        for symbol in self.symbols:
+            df = self.get_db_data(symbol)
+            dbn_store = databento.DBNStore.from_file(path="data/glbx-mdp3-20250801-20250828.ohlcv-1m.dbn.zst")
+            # dbn_store = databento.DBNStore.from_file(path="data/glbx-mdp3-20200829-20250828.ohlcv-1m.dbn.zst")
 
         df = dbn_store.to_df()
         logger.info(f"Retrieved {len(df)} entries in data frame")
 
         return self._deserialize_dbn(df)
+
+    def get_db_data(self, symbol: str) -> pd.DataFrame:
+        curr_date: datetime.date = self.start_time.astimezone(pytz.utc).date()
+        end_date: datetime.date = self.end_time.astimezone(pytz.utc).date()
+        while curr_date <= end_date:
+            logger.debug(f"Getting db for {curr_date}")
+
+            curr_date += timedelta(days=1)
 
     def _deserialize_dbn(self, df: pd.DataFrame) -> dict[str, dict[datetime, Candle]]:
         data: dict = {s: {} for s in self.symbols}
