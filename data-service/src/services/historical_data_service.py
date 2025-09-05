@@ -1,3 +1,4 @@
+import os
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
@@ -35,6 +36,7 @@ class HistoricalDataService:
     def get_db_data(self, symbol: str) -> pd.DataFrame:
         curr_date: datetime.date = self.start_time.astimezone(pytz.utc).date()
         end_date: datetime.date = self.end_time.astimezone(pytz.utc).date()
+        logger.debug(f"Data: {os.listdir('data')}")
         while curr_date <= end_date:
             logger.debug(f"Getting db for {curr_date}")
 
