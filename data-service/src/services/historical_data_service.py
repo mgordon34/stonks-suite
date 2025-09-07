@@ -43,6 +43,9 @@ class HistoricalDataService:
 
             curr_date += timedelta(days=1)
 
+    def get_dbn_for_date(date: datetime.date) -> databento.DBNStore:
+        logger.debug(f"Finding dbn store for {date}")
+
     def _deserialize_dbn(self, df: pd.DataFrame) -> dict[str, dict[datetime, Candle]]:
         data: dict = {s: {} for s in self.symbols}
 
