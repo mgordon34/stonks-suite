@@ -18,8 +18,9 @@ class Settings(BaseSettings):
 
     # External services
     rabbitmq_url: str = "amqp://localhost:5672"
-    postgres_url: str = "postgresql://user:pass@localhost:5432/trading"
+    postgres_url: str = "postgresql://postgres:stonks@db:5432/stonks"
     redis_url: str = "redis://localhost:6379"
+    echo_sql: bool = True
 
 
 @lru_cache

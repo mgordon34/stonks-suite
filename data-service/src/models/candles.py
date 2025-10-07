@@ -1,14 +1,21 @@
-from dataclasses import dataclass
 from datetime import datetime
 
+from database import Base
+from sqlalchemy import UniqueConstraint
+from sqlalchemy.orm import Mapped, mapped_column
 
-@dataclass
-class Candle:
-    symbol: str
-    timeframe: str
-    start_time: datetime
-    open: float
-    high: float
-    low: float
-    close: float
-    volume: int
+
+class Candle(Base):
+    __tablename__ = "candles"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    symbol: Mapped[int] = mapped_column(index=True)
+    timeframe: Mapped[str] = mapped_column(index=True)
+    start_time: Mapped[datetime]
+    open: Mapped[float]
+    high: Mapped[float]
+    low: Mapped[float]
+    close: Mapped[float]
+    volume: Mapped[int]
+
+    __table_args__ = (UniqueConstraint("symbol", "timeframe", "start_time"),)

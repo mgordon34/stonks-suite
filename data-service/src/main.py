@@ -2,7 +2,9 @@ import asyncio
 from datetime import datetime
 from typing import Any
 
+import models
 import structlog
+from database import engine
 from fastapi import FastAPI, Query
 from pydantic import BaseModel
 from services.historical_data_service import HistoricalDataService
@@ -13,6 +15,8 @@ config: Settings = get_settings()
 
 structlog.configure(wrapper_class=structlog.make_filtering_bound_logger(config.log_level))
 logger = structlog.get_logger(__name__)
+
+models.Base.metadata.create_all(bind=engine)
 
 # FastAPI app
 app = FastAPI(
