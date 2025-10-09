@@ -3,10 +3,10 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 
 
-class UserBase(BaseModel):
+class CandleBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    symbol: int
+    symbol: str
     timeframe: str
     start_time: datetime
     open: float
@@ -16,11 +16,11 @@ class UserBase(BaseModel):
     volume: int
 
 
-class UserCreate(UserBase):
+class CandleCreate(CandleBase):
     pass
 
 
-class User(UserBase):
+class Candle(CandleBase):
     id: int
 
     class Config:

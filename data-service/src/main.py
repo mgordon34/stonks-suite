@@ -3,11 +3,13 @@ from datetime import datetime
 from typing import Any
 
 import models
+import schemas
 import structlog
-from database import engine
-from fastapi import FastAPI, Query
+from database import engine, get_db
+from fastapi import Depends, FastAPI, Query
 from pydantic import BaseModel
 from services.historical_data_service import HistoricalDataService
+from sqlalchemy.orm import Session
 
 from common.config import Settings, get_settings
 
@@ -67,6 +69,23 @@ async def health_check():
 async def get_historical_data(start_time: datetime, end_time: datetime, timeframe: str, symbols: list[str] = Query()):
     hist_data_service = HistoricalDataService(start_time, end_time, symbols, timeframe)
     return hist_data_service.publish_historical_data()
+
+
+@app.get("/make-candle", response_model=schemas.Candle)
+async def make_candle(db: Session = Depends(get_db)):
+    db_item = models.Candle(
+        symbol="NQ",
+        timeframe="1",
+        start_time=datetime.now(),
+        open=0.0,
+        high=0.0,
+        low=0.0,
+        close=0.0,
+        volume=1,
+    )
+    db.add(db_item)
+    db.commit()
+    return db_item
 
 
 # Error handlers

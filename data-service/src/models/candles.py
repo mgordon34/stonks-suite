@@ -9,7 +9,7 @@ class Candle(Base):
     __tablename__ = "candles"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    symbol: Mapped[int] = mapped_column(index=True)
+    symbol: Mapped[str] = mapped_column(index=True)
     timeframe: Mapped[str] = mapped_column(index=True)
     start_time: Mapped[datetime]
     open: Mapped[float]
